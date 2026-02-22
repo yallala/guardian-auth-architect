@@ -1,0 +1,6 @@
+Project: GuardianAuth
+1. Users must authenticate using a corporate email address.
+2. Passwords must be at least 14 characters long.
+3. Multi-Factor Authentication (MFA) is required for all admin users.
+4. The system must lock the account after 5 failed login attempts.
+5. All login events must be logged to Azure Monitor.
