@@ -1,262 +1,164 @@
-# [Heading: Corporate Email Authentication]
+# [Heading: Corporate Email for Authentication]
 
 ## 📋 Requirement Context
-- **Source Requirement**: Users must authenticate using a corporate email address.
+- **Source Requirement**: "Users must authenticate using a corporate email address."
 - **Security Domain**: Access Control
 
 ## 🚨 Identified Gap
-- The system currently allows non-corporate email domains during authentication, potentially exposing it to unauthorized accounts.
+- The system does not enforce corporate email validation, allowing users to sign up with non-corporate email addresses.
 
 ## 🛠️ Remediation Strategy (Atomic Stories)
 
-### **Title**: Add Corporate Email Domain Validation During Authentication
-**Acceptance Criteria**:
-- Only emails matching a predefined corporate domain (e.g., @company.com) are allowed during sign-up and authentication.
-- Incorrect domain usage results in a clear error message explaining the restriction.
-
-**Gherkin Scenario**:
-```
-Given the corporate domain is set as "@company.com"
-When a user attempts to sign up with "user@random.com"
-Then they should receive an error indicating only "@company.com" domain is allowed.
-```
-
----
-
-### **Title**: Establish Configurable Allowed Domains List
-**Acceptance Criteria**:
-- Administrators can configure a list of allowed corporate email domains within system settings.
-- Changes to the allowed domains list trigger a confirmation request from the administrator.
-
-**Gherkin Scenario**:
-```
-Given the administrator modifies the allowed domains list
-When they add "@newcompany.com" to the list
-Then the system confirms the update and restricts authentication to the updated list.
-```
+### **Title**: Enforce Corporate Email Validation
+1. **Acceptance Criteria**:
+   - Only email addresses from the corporate domain(s) can be registered or authenticated.
+   - Non-corporate emails result in a validation error during registration or login.
+2. **Gherkin Scenario**:
+   ```
+   Given a user attempts to register or log in 
+   When they provide a non-corporate email address 
+   Then the system should display an error message stating "Corporate email required" 
+   And block access until valid credentials are provided.
+   ```
 
 ---
 
-### **Title**: Provide User-Facing Diagnostics on Invalid Email Domains
-**Acceptance Criteria**:
-- Error message clearly specifies which corporate domains are accepted (e.g., "@company.com").
-- Documentation is updated in the user guide to explain valid email domains.
-
-**Gherkin Scenario**:
-```
-Given a user enters an invalid email domain
-When the system rejects the domain
-Then the user receives a message saying "Please use a corporate email such as @company.com."
-```
-
----
-
-# [Heading: Password Security Standards]
+# [Heading: Password Length Requirement]
 
 ## 📋 Requirement Context
-- **Source Requirement**: Passwords must be at least 14 characters long.
-- **Security Domain**: Data Privacy
+- **Source Requirement**: "Passwords must be at least 14 characters long."
+- **Security Domain**: Authentication Strength
 
 ## 🚨 Identified Gap
-- Currently, users can create passwords with fewer than 14 characters, increasing susceptibility to brute-force attacks.
+- Passwords shorter than 14 characters are accepted during registration and login.
 
 ## 🛠️ Remediation Strategy (Atomic Stories)
 
-### **Title**: Enforce Minimum Password Length of 14 Characters
-**Acceptance Criteria**:
-- The system rejects password creation if it is fewer than 14 characters.
-- Password length enforcement is validated across all user-facing inputs.
+### **Title**: Enforce Minimum Password Length
+1. **Acceptance Criteria**:
+   - Passwords shorter than 14 characters are rejected during registration and login attempts.
+   - Users attempting to create a weak password are notified of the requirement.
+2. **Gherkin Scenario**:
+   ```
+   Given a user attempts to register or log in 
+   When they provide a password with less than 14 characters 
+   Then the system should reject the password and display the message "Password must be at least 14 characters."
+   ```
 
-**Gherkin Scenario**:
-```
-Given a user attempts to set a password
-When they enter fewer than 14 characters
-Then the system blocks the password creation with a message stating "Passwords must be at least 14 characters long."
-```
-
----
-
-### **Title**: Implement Client-Side Password Validation
-**Acceptance Criteria**:
-- Password length validation occurs immediately in the browser during the sign-up or password reset process.
-- Users are prompted dynamically to meet the length requirement as they type.
-
-**Gherkin Scenario**:
-```
-Given a user creates a new password during sign-up
-When they type less than 14 characters
-Then the browser displays a warning saying "Passwords must be at least 14 characters."
-```
+### **Title**: Password Validation Notification
+1. **Acceptance Criteria**:
+   - Users are informed of the password length requirement during account creation.
+   - The system provides real-time feedback as users enter their password.
+2. **Gherkin Scenario**:
+   ```
+   Given a user is creating an account 
+   When they begin typing their password in the password field 
+   Then the system should display the message "Password must be at least 14 characters long" until the criteria are met.
+   ```
 
 ---
 
-### **Title**: Monitor Password Compliance in Metrics Dashboard
-**Acceptance Criteria**:
-- Add a dashboard metric in Azure Monitor showing compliance with password complexity rules.
-- Provide alerts for administrators when non-compliant password submissions are attempted.
-
-**Gherkin Scenario**:
-```
-Given a user submits an invalid password
-When the attempt fails due to non-compliance
-Then the system logs the event in Azure Monitor for admin review.
-```
-
----
-
-# [Heading: Multi-Factor Authentication (MFA) for Admins]
+# [Heading: Multi-Factor Authentication for Admins]
 
 ## 📋 Requirement Context
-- **Source Requirement**: Multi-Factor Authentication (MFA) is required for all admin users.
-- **Security Domain**: Access Control
+- **Source Requirement**: "Multi-Factor Authentication (MFA) is required for all admin users."
+- **Security Domain**: Authentication Strength
 
 ## 🚨 Identified Gap
-- Some admin users can bypass MFA during login, increasing risk of unauthorized access.
+- Administrators can log in without MFA being enforced, exposing sensitive data and settings.
 
 ## 🛠️ Remediation Strategy (Atomic Stories)
 
-### **Title**: Enforce Mandatory MFA for Admin Roles
-**Acceptance Criteria**:
-- Admin accounts are required to configure MFA before accessing privileged functions.
-- Any attempts to bypass MFA are blocked by the system.
+### **Title**: Enforce Mandatory MFA for Admin Accounts
+1. **Acceptance Criteria**:
+   - Admin users cannot log in without completing MFA.
+   - MFA mechanism integrates seamlessly during the login process.
+2. **Gherkin Scenario**:
+   ```
+   Given an admin user attempts to log in 
+   When they provide valid username and password credentials 
+   Then the system should require MFA verification before granting access.
+   ```
 
-**Gherkin Scenario**:
-```
-Given an admin user attempts to log in 
-When MFA is not configured for the account
-Then login access is denied with instructions to setup MFA.
-```
-
----
-
-### **Title**: Provide MFA Status Alerts for Admin Accounts
-**Acceptance Criteria**:
-- Administrators are notified of any accounts with missing MFA setups.
-- Azure Monitor alerts are triggered for MFA configuration irregularities.
-
-**Gherkin Scenario**:
-```
-Given an admin account lacks MFA
-When an audit runs
-Then an alert is raised identifying the account non-compliance in Azure Monitor.
-```
+### **Title**: Notify Admins of MFA Requirement
+1. **Acceptance Criteria**:
+   - Admin users are reminded of the MFA policy in their account settings and login procedure.
+   - Admins without MFA enabled are prevented from logging in.
+2. **Gherkin Scenario**:
+   ```
+   Given an admin user attempts to log in without MFA configured 
+   When they enter their username and password 
+   Then the system should display a message saying "MFA is required for admin access."
+   ```
 
 ---
 
-### **Title**: Offer Easy MFA Setup for Admin Accounts
-**Acceptance Criteria**:
-- Admin users are guided through a wizard for MFA setup during initial account sign-up.
-- Multiple MFA options (e.g., SMS, Authenticator App) are available.
-
-**Gherkin Scenario**:
-```
-Given a new admin sets up their account
-When they reach the MFA setup step
-Then they are presented with options for SMS or Authenticator app configuration.
-```
-
----
-
-# [Heading: Account Lock Policy]
+# [Heading: Account Lockout Policy]
 
 ## 📋 Requirement Context
-- **Source Requirement**: The system must lock the account after 5 failed login attempts.
-- **Security Domain**: Auditability
+- **Source Requirement**: "The system must lock the account after 5 failed login attempts."
+- **Security Domain**: Authentication Strength
 
 ## 🚨 Identified Gap
-- Accounts are not being locked consistently after 5 failed attempts, leaving room for brute-force attacks.
+- There is no automatic account lockout mechanism in the case of repeated failed login attempts.
 
 ## 🛠️ Remediation Strategy (Atomic Stories)
 
-### **Title**: Enforce Strict Lockout Policy
-**Acceptance Criteria**:
-- After 5 failed login attempts, the account is locked for a minimum of 15 minutes.
-- A locked account displays a clear error message to users with guidance to recover.
+### **Title**: Implement Account Lockout After 5 Failed Attempts
+1. **Acceptance Criteria**:
+   - Accounts are locked out for a configurable duration after 5 consecutive failed login attempts.
+   - Users receive a notification indicating account lockout and details on how to recover access.
+2. **Gherkin Scenario**:
+   ```
+   Given a user with 5 failed login attempts 
+   When they attempt to log in again 
+   Then the system should lock their account 
+   And display a message saying "Your account has been locked due to multiple failed login attempts. Please follow the recovery procedure to regain access."
+   ```
 
-**Gherkin Scenario**:
-```
-Given a user attempts multiple failed logins
-When the number of attempts exceeds 5
-Then the account is locked, and they see a message saying "Your account is temporarily locked."
-```
-
----
-
-### **Title**: Notify Users of Account Lock Events
-**Acceptance Criteria**:
-- Locked accounts trigger an email notification to users with instructions for resolution.
-- Administrators receive alerts for accounts locked due to suspicious activity.
-
-**Gherkin Scenario**:
-```
-Given an account is locked after repeated failed logins
-When the system locks the account
-Then the user and admin are sent notifications detailing the event.
-```
-
----
-
-### **Title**: Log Account Lock Events to Azure Monitor
-**Acceptance Criteria**:
-- Every account lock event is tracked in Azure Monitor.
-- Dashboards provide lockout metrics for administrators to review frequency and patterns.
-
-**Gherkin Scenario**:
-```
-Given an account is locked for failed login attempts
-When the lock event occurs
-Then the event is logged to Azure Monitor for administrative analysis.
-```
+### **Title**: Configure Lockout Duration and Reset Process
+1. **Acceptance Criteria**:
+   - Administrators can configure the duration of account lockout (e.g., 30 minutes).
+   - The system provides a secure mechanism for users to regain access following lockout.
+2. **Gherkin Scenario**:
+   ```
+   Given an administrator configures lockout settings 
+   When they set the lockout interval to 30 minutes and define the recovery procedure 
+   Then users should not be able to log in until the interval has passed or the recovery procedure is completed.
+   ```
 
 ---
 
 # [Heading: Logging Login Events to Azure Monitor]
 
 ## 📋 Requirement Context
-- **Source Requirement**: All login events must be logged to Azure Monitor.
+- **Source Requirement**: "All login events must be logged to Azure Monitor."
 - **Security Domain**: Auditability
 
 ## 🚨 Identified Gap
-- Not all login attempts (successful and failed) are being captured in Azure Monitor logs.
+- Login activity is not being consistently logged to Azure Monitor, reducing visibility into authentication attempts.
 
 ## 🛠️ Remediation Strategy (Atomic Stories)
 
-### **Title**: Enable End-to-End Login Event Logging
-**Acceptance Criteria**:
-- Both successful and unsuccessful login events are logged to Azure Monitor.
-- Logs include key details like user email, timestamp, and IP address.
+### **Title**: Enable Comprehensive Logging to Azure Monitor
+1. **Acceptance Criteria**:
+   - All login attempts are logged, regardless of success or failure.
+   - Logs include essential details such as timestamp, IP address, username, and login status.
+2. **Gherkin Scenario**:
+   ```
+   Given a user attempts to log in 
+   When the login succeeds or fails 
+   Then the system should log the event to Azure Monitor with complete metadata, including timestamp, IP address, and user identifier.
+   ```
 
-**Gherkin Scenario**:
-```
-Given a user attempts to log in
-When the login is successful or unsuccessful
-Then the event is logged in Azure Monitor with timestamp and user details.
-```
-
----
-
-### **Title**: Create Dashboard for Login Metrics
-**Acceptance Criteria**:
-- Azure Monitor has dashboards displaying login trends and anomalies.
-- Failed login heatmaps are visible for geographic and temporal trends.
-
-**Gherkin Scenario**:
-```
-Given login events are logged to Azure Monitor
-When data is aggregated
-Then administrators can view dashboards showing login trends.
-```
-
----
-
-### **Title**: Implement Alerts for Suspicious Login Activity
-**Acceptance Criteria**:
-- Administrators are alerted when suspicious login patterns (e.g., failed attempts from multiple IPs) occur.
-- Alert thresholds can be configured within Azure Monitor.
-
-**Gherkin Scenario**:
-```
-Given suspicious login patterns are detected
-When the configured threshold is exceeded
-Then the system sends a security alert to administrators.
-```
+### **Title**: Validate Azure Monitor Integration
+1. **Acceptance Criteria**:
+   - The logging system is thoroughly tested to ensure data is reliably transferred to Azure Monitor.
+   - Administrators receive alerts in case of logging failures.
+2. **Gherkin Scenario**:
+   ```
+   Given the system is configured to log events to Azure Monitor 
+   When a login event occurs 
+   Then the system should confirm data transmission to Azure Monitor 
+   And alert administrators if the logging fails.
+   ```

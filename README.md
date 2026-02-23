@@ -1,25 +1,34 @@
-# GuardianAuth: Enterprise Agentic Security Platform
+# 🛡️ Guardian-Auth Architect
+**Autonomous AI-Driven Security SDLC Pipeline**
 
-## 🛡️ Project Vision
-GuardianAuth is an AI-Native platform that automates the generation of secure software by bridging the gap between static security policies and production code. It uses the **Login Feature** as a primary demonstration of end-to-end security automation.
+Guardian-Auth Architect is a multi-agent system designed to automate the gap between security audits and feature implementation. It uses a swarm of specialized AI agents to identify vulnerabilities, manage project backlogs in Jira, and generate verified, production-ready code.
 
-## ⚙️ Core Workflows
+---
 
-### Workflow A: The Analyst (Compliance & Edge Case Engine)
-* **Input**: Security Standards (PDF via RAG) + Application Design Specs.
-* **Action**: Analyzes requirements against corporate security policies.
-* **Output**: Generates a **Jira User Story** for the **Login Feature**, complete with mandatory security acceptance criteria and negative testing edge cases.
+## 🏗️ The Architecture
+The system utilizes a decoupled, five-agent orchestration layer to ensure "Shift-Left" security and high-fidelity code generation.
 
-### Workflow B: The Developer (Cloud-Native Scaffolder)
-* **Input**: Approved Jira Ticket from Workflow A.
-* **Action**: Generates production-ready code and infrastructure.
-* **Output**: Python source code, **ARO (OpenShift)** manifests, and **Azure DevOps** pipelines for the Login implementation.
 
-## 🛠️ Technology Stack
-* **Intelligence**: Azure OpenAI (GPT-4o), LangChain, FAISS (Vector DB).
-* **Infrastructure**: Azure Red Hat OpenShift (ARO), Kubernetes, Docker.
-* **Integration**: Jira REST API, GitHub Copilot.
 
-## 👤 Architect
-**Sudheer Kumar Yallalacheruvu**
-*AI Implementation Leader | Enterprise Solutions Architect*
+### 🤖 The Agent Swarm
+* **Analyst Agent**: Deconstructs high-level requirements into Atomic Gherkin Stories.
+* **Security Auditor**: Performs Zero-Trust audits on requirements to identify potential exploits (e.g., SEC-67).
+* **Bridge Agent**: Handles ALM integration, synchronizing audit findings with **Jira** for tracking.
+* **Developer Agent**: Translates Jira tickets into sanitized, PEP8-compliant Python modules.
+* **Validator Agent**: Automatically engineers and executes **Pytest** suites to ensure 100% logic coverage.
+
+---
+
+## 🛠️ Technical Stack
+* **Language**: Python 3.14 (Bleeding Edge)
+* **LLM Orchestration**: Azure OpenAI (GPT-4o/o1) via LangChain
+* **Project Management**: Jira API
+* **Testing**: Pytest
+* **Version Control**: Git / GitHub
+
+---
+
+## 🚦 Getting Started
+1. **Clone the Repo**:
+   ```bash
+   git clone [https://github.com/yallala/guardian-auth-architect.git](https://github.com/yallala/guardian-auth-architect.git)

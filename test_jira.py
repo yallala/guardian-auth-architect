@@ -7,7 +7,9 @@ from requests.auth import HTTPBasicAuth
 load_dotenv()
 
 # Build the connection URL
-url = f"{os.getenv('JIRA_SITE_URL')}/rest/api/3/project/{os.getenv('JIRA_PROJECT_KEY')}"
+# We use 'JIRA_SERVER' because that is what's in your .env
+url = f"{os.getenv('JIRA_SERVER')}/rest/api/3/project/{os.getenv('JIRA_PROJECT_KEY')}"
+print(f"DEBUG: Attempting to connect to: {url}")
 auth = HTTPBasicAuth(os.getenv("JIRA_EMAIL"), os.getenv("JIRA_API_TOKEN"))
 
 # Send a request to Jira
