@@ -1,12 +1,14 @@
 import subprocess
 import sys
+import os
+import glob
 
 def run_step(description, command):
     """Executes a pipeline step and handles terminal output."""
     print(f"\n--- 🚀 {description} ---")
     try:
         # Runs the command and pipes the output directly to your terminal
-        subprocess.run(command, check=True, shell=isinstance(command, str))
+        subprocess.run(command, check=True)
         return True
     except subprocess.CalledProcessError as e:
         print(f"❌ Error during {description}: {e}")
@@ -29,9 +31,9 @@ def main():
         sys.exit(0)
 
     # --- PHASE 2: JIRA SYNCHRONIZATION ---
-    # We allow the pipeline to continue even if Jira fails (Local-First mode)
-    if not run_step("Phase 2: Jira Synchronization", ["python3", "test_jira.py"]):
-        print("⚠️  Warning: Jira sync failed (404/Connection). Proceeding in Local Mode...")
+    # CHANGED: Now runs the actual Analyst Agent instead of just the test script
+    if not run_step("Phase 2: Jira Synchronization", ["python3", "src/analyst_agent.py"]):
+        print("⚠️  Warning: Jira sync failed. Check your .env and Jira project key.")
 
     # --- 🚦 GATE 2: DEV AUTHORIZATION ---
     user_input = input("\n🚀 Ready to authorize AI Code Generation? (y/n): ")
@@ -45,7 +47,17 @@ def main():
         sys.exit(1)
 
     # --- PHASE 4: LOGIC VERIFICATION ---
-    if not run_step("Phase 4: Logic Verification", ["python3", "-m", "pytest", "src/generated_code/test_SEC_67.py"]):
+    # CHANGED: Dynamic discovery of test files instead of hardcoded 'test_SEC_67.py'
+    test_files = glob.glob("src/generated_code/test_*.py")
+    
+    if not test_files:
+        print("🚨 Error: No test files were found in src/generated_code/. Phase 3 likely failed to save files.")
+        sys.exit(1)
+
+    print(f"🧪 Running verification on {len(test_files)} generated test(s)...")
+    
+    # We run pytest on the entire directory to catch all generated tests
+    if not run_step("Phase 4: Logic Verification", ["python3", "-m", "pytest", "src/generated_code/"]):
         print("🚨 Logic Verification FAILED. Do not deploy this code!")
         sys.exit(1)
 

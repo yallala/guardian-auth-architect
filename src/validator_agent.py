@@ -40,14 +40,9 @@ def validate_feature(ticket_key):
 
     system_msg = SystemMessage(content="""
         You are a Senior QA Automation Engineer.
-        Your goal is to write a 'pytest' suite that validates if the provided Python code
-        perfectly satisfies the Gherkin requirements.
-        
-        RULES:
-        1. Only output valid Python code. No Markdown backticks.
-        2. Use the 'pytest' framework.
-        3. Include at least 3 test cases: Positive, Negative, and Edge Case.
-        4. Make sure the test imports the function from the generated file correctly.
+        ... (keep existing rules) ...
+        3. Output ONLY the Python test code. No conversation.
+        4. IMPORTANT: Use .strip() when comparing strings to ignore extra spaces or dots.
     """)
 
     prompt = f"GHERKIN REQUIREMENTS:\n{gherkin}\n\nSOURCE CODE:\n{source_code}"

@@ -37,7 +37,6 @@ def run_analyst_workflow():
     # --- STEP 3: TRANSFORM TO GHERKIN & UPLOAD ---
     print(f"🚀 Converting {len(requirements)} rules into Gherkin Stories...")
 
-    # Use 'enumerate' to get the index (1, 2, 3...) of each requirement
     for i, req in enumerate(requirements, start=1):
         print(f"🧠 Processing Feature {i} edge cases...")
 
@@ -56,54 +55,39 @@ def run_analyst_workflow():
             Each story needs: Title, 2 Criteria, and 1 Gherkin Scenario.
         """)
         
+        # Call the AI once per requirement
         response = llm.invoke([system_msg, HumanMessage(content=req)])
         atomic_stories = response.content.split('###')
 
-        # Inner loop for the sub-features (1.1, 1.2...)
-        for j, story in enumerate(atomic_stories, start=1):
-            if len(story.strip()) > 20:
-                summary_line = story.strip().split('\n')[0].replace('Title:', '').strip()
-                # If the AI didn't follow naming perfectly, we force it here:
+        # Process the AI-generated stories
+        for j, story_text in enumerate(atomic_stories, start=1):
+            story_text = story_text.strip()
+            
+            # Ensure the segment actually contains a story
+            if len(story_text) > 20:
+                # Extract the first line as the title and clean it
+                summary_line = story_text.split('\n')[0].replace('Title:', '').strip()
                 final_summary = f"Feature {i}.{j}: {summary_line}"
                 
-                jira.create_issue(fields={
-                    'project': {'key': project_key},
-                    'summary': final_summary,
-                    'description': story.strip(),
-                    'issuetype': {'name': 'Story'},
-                })
-        
-        
-        response = llm.invoke([system_msg, HumanMessage(content=req)])
+                    # --- IDEMPOTENCY CHECK (EXACT MATCH) ---
+                # We use '=' for an exact string match of the final summary
+                jql = f'project = "{project_key}" AND summary ~ "\\"{final_summary}\\""'
+                existing_issues = jira.search_issues(jql)
 
-        # Split the AI's response into the individual atomic stories
-        atomic_stories = response.content.split('###')
+                if existing_issues:
+                    print(f"⏩ Skipping: '{final_summary}' (Already exists as {existing_issues[0].key})")
+                else:
+                    # --- CREATION ---
+                    print(f"🆕 Creating: '{final_summary}'")
+                    new_issue = jira.create_issue(fields={
+                        'project': {'key': project_key},
+                        'summary': final_summary,
+                        'description': story_text,
+                        'issuetype': {'name': 'Story'},
+                    })
+                    print(f"🎫 Ticket Created: {new_issue.key}")
 
-        for story in atomic_stories:
-            if len(story.strip()) > 20:
-                summary_line = story.strip().split('\n')[0].replace('Title:', '').strip()
-                
-                issue_dict = {
-                    'project': {'key': project_key},
-                    'summary': f'SEC-FEATURE: {summary_line}',
-                    'description': story.strip(),
-                    'issuetype': {'name': 'Story'},
-                }
-                new_issue = jira.create_issue(fields=issue_dict)
-                print(f"🎫 Created Atomic Story: {new_issue.key}")
-        
-        response = llm.invoke([system_msg, HumanMessage(content=req)])
-
-        # Create the ticket in Jira
-        issue_dict = {
-            'project': {'key': project_key},
-            'summary': f'Feature: {req[:50]}',
-            'description': response.content,
-            'issuetype': {'name': 'Story'},
-        }
-        
-        new_issue = jira.create_issue(fields=issue_dict)
-        print(f"🎫 Created Gherkin Story: {new_issue.key}")
+    print("\n✨ All requirements processed. Backlog is synchronized!")
 
 if __name__ == "__main__":
     print("🎬 Starting Analyst Agent...")

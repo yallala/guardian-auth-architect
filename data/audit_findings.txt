@@ -1,164 +1,52 @@
-# [Heading: Corporate Email for Authentication]
+# GuardianAuth Security Audit Report
 
-## 📋 Requirement Context
-- **Source Requirement**: "Users must authenticate using a corporate email address."
-- **Security Domain**: Access Control
-
-## 🚨 Identified Gap
-- The system does not enforce corporate email validation, allowing users to sign up with non-corporate email addresses.
-
-## 🛠️ Remediation Strategy (Atomic Stories)
-
-### **Title**: Enforce Corporate Email Validation
-1. **Acceptance Criteria**:
-   - Only email addresses from the corporate domain(s) can be registered or authenticated.
-   - Non-corporate emails result in a validation error during registration or login.
-2. **Gherkin Scenario**:
-   ```
-   Given a user attempts to register or log in 
-   When they provide a non-corporate email address 
-   Then the system should display an error message stating "Corporate email required" 
-   And block access until valid credentials are provided.
-   ```
 
 ---
 
-# [Heading: Password Length Requirement]
 
-## 📋 Requirement Context
-- **Source Requirement**: "Passwords must be at least 14 characters long."
-- **Security Domain**: Authentication Strength
+## Project Overview and Audit Scope
+### The project, GuardianAuth, addresses authentication security for internal corporate applications. Its scope includes validating and enhancing practices surrounding user registration, particularly with verified corporate email domains, namely "@guardian.com". 
 
-## 🚨 Identified Gap
-- Passwords shorter than 14 characters are accepted during registration and login.
-
-## 🛠️ Remediation Strategy (Atomic Stories)
-
-### **Title**: Enforce Minimum Password Length
-1. **Acceptance Criteria**:
-   - Passwords shorter than 14 characters are rejected during registration and login attempts.
-   - Users attempting to create a weak password are notified of the requirement.
-2. **Gherkin Scenario**:
-   ```
-   Given a user attempts to register or log in 
-   When they provide a password with less than 14 characters 
-   Then the system should reject the password and display the message "Password must be at least 14 characters."
-   ```
-
-### **Title**: Password Validation Notification
-1. **Acceptance Criteria**:
-   - Users are informed of the password length requirement during account creation.
-   - The system provides real-time feedback as users enter their password.
-2. **Gherkin Scenario**:
-   ```
-   Given a user is creating an account 
-   When they begin typing their password in the password field 
-   Then the system should display the message "Password must be at least 14 characters long" until the criteria are met.
-   ```
 
 ---
 
-# [Heading: Multi-Factor Authentication for Admins]
 
-## 📋 Requirement Context
-- **Source Requirement**: "Multi-Factor Authentication (MFA) is required for all admin users."
-- **Security Domain**: Authentication Strength
+## Registration Process Security Assessment  
 
-## 🚨 Identified Gap
-- Administrators can log in without MFA being enforced, exposing sensitive data and settings.
+### Validation of Email Domain Constraints  
+- GuardianAuth correctly enforces the use of corporate emails ending in "@guardian.com" for registration. This limits access to company employees only.  
+- A hostname validation mechanism exists to ensure compliance with required domain standards, minimizing risks from external non-compliant email domains.  
 
-## 🛠️ Remediation Strategy (Atomic Stories)
+### Risks of Bypassing Domain Validation  
+- Audit teams identified a potential loophole wherein subdomain addresses (e.g., "spoof@sub.guardian.com") could theoretically bypass domain verification without a strict regex check.  
+- Recommendations include strengthening domain validation logic with stricter whitelisting and ongoing anomaly detection.  
 
-### **Title**: Enforce Mandatory MFA for Admin Accounts
-1. **Acceptance Criteria**:
-   - Admin users cannot log in without completing MFA.
-   - MFA mechanism integrates seamlessly during the login process.
-2. **Gherkin Scenario**:
-   ```
-   Given an admin user attempts to log in 
-   When they provide valid username and password credentials 
-   Then the system should require MFA verification before granting access.
-   ```
+### Security Impacts of Domain Enforcement  
+- The restriction ensures data segregation, reducing exposure to third-party or malicious actors attempting unauthorized access.  
+- However, exposure may occur if external collaborators or partnerships require access but cannot use "@guardian.com." Guardrails for temporary access delegation should be considered.  
 
-### **Title**: Notify Admins of MFA Requirement
-1. **Acceptance Criteria**:
-   - Admin users are reminded of the MFA policy in their account settings and login procedure.
-   - Admins without MFA enabled are prevented from logging in.
-2. **Gherkin Scenario**:
-   ```
-   Given an admin user attempts to log in without MFA configured 
-   When they enter their username and password 
-   Then the system should display a message saying "MFA is required for admin access."
-   ```
 
 ---
 
-# [Heading: Account Lockout Policy]
 
-## 📋 Requirement Context
-- **Source Requirement**: "The system must lock the account after 5 failed login attempts."
-- **Security Domain**: Authentication Strength
+## User Onboarding and Email Privacy  
 
-## 🚨 Identified Gap
-- There is no automatic account lockout mechanism in the case of repeated failed login attempts.
+### Risks of Oversharing Domain Information  
+- Explicit use of a corporate domain in user registration can expose Guardian's internal email convention publicly. This could increase phishing risk vectors targeting "username@guardian.com."  
+- Recommendations include implementing unique hashed email identifiers for login showing email only at critical confirmation or communication stages.  
 
-## 🛠️ Remediation Strategy (Atomic Stories)
+### Multi-Factor Authentication Enforcement  
+- Despite email-based filtration, GuardianAuth still needs stronger combined authentication such as hardware-backed MFA tokens to reduce reliance on email verification alone.  
 
-### **Title**: Implement Account Lockout After 5 Failed Attempts
-1. **Acceptance Criteria**:
-   - Accounts are locked out for a configurable duration after 5 consecutive failed login attempts.
-   - Users receive a notification indicating account lockout and details on how to recover access.
-2. **Gherkin Scenario**:
-   ```
-   Given a user with 5 failed login attempts 
-   When they attempt to log in again 
-   Then the system should lock their account 
-   And display a message saying "Your account has been locked due to multiple failed login attempts. Please follow the recovery procedure to regain access."
-   ```
+### Email Creation Audit Trails  
+- Logs associated with account registration display sufficient timestamps, error checks, and failure reports. This is beneficial under regulatory inspections (e.g., GDPR data tracking requirements).  
 
-### **Title**: Configure Lockout Duration and Reset Process
-1. **Acceptance Criteria**:
-   - Administrators can configure the duration of account lockout (e.g., 30 minutes).
-   - The system provides a secure mechanism for users to regain access following lockout.
-2. **Gherkin Scenario**:
-   ```
-   Given an administrator configures lockout settings 
-   When they set the lockout interval to 30 minutes and define the recovery procedure 
-   Then users should not be able to log in until the interval has passed or the recovery procedure is completed.
-   ```
 
 ---
 
-# [Heading: Logging Login Events to Azure Monitor]
 
-## 📋 Requirement Context
-- **Source Requirement**: "All login events must be logged to Azure Monitor."
-- **Security Domain**: Auditability
+## Breach Simulations and Stress Testing  
 
-## 🚨 Identified Gap
-- Login activity is not being consistently logged to Azure Monitor, reducing visibility into authentication attempts.
-
-## 🛠️ Remediation Strategy (Atomic Stories)
-
-### **Title**: Enable Comprehensive Logging to Azure Monitor
-1. **Acceptance Criteria**:
-   - All login attempts are logged, regardless of success or failure.
-   - Logs include essential details such as timestamp, IP address, username, and login status.
-2. **Gherkin Scenario**:
-   ```
-   Given a user attempts to log in 
-   When the login succeeds or fails 
-   Then the system should log the event to Azure Monitor with complete metadata, including timestamp, IP address, and user identifier.
-   ```
-
-### **Title**: Validate Azure Monitor Integration
-1. **Acceptance Criteria**:
-   - The logging system is thoroughly tested to ensure data is reliably transferred to Azure Monitor.
-   - Administrators receive alerts in case of logging failures.
-2. **Gherkin Scenario**:
-   ```
-   Given the system is configured to log events to Azure Monitor 
-   When a login event occurs 
-   Then the system should confirm data transmission to Azure Monitor 
-   And alert administrators if the logging fails.
-   ```
+### Protecting Against Credential Stuffing  
+- Tests demonstrated moderate resilience in rejecting repeated corporate credential stuffing attacks. It lacked direct CAPTCHA/advanced rate limits under this model.  
+### Ensure locked out detection runs permanent-limited intervals, tighter Ant-level-area logging monitoring over Apps real-time

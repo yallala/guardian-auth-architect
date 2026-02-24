@@ -1,4 +1,6 @@
 .env
 __pycache__/
 *.pyc
-.DS_Store
+suspect_files/
+temp_hold/
+src/generated_code/
