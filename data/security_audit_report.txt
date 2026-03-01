@@ -1,5 +1,5 @@
-Title: Secure Transmission of Password Reset Code 
+Title: Email Validation for Password Reset 
 ---
- Finding: The 6-digit code for password reset could be transmitted over an insecure email channel, making it susceptible to interception. 
+ Finding: Lack of explicit mention regarding validation of corporate email (@guardian.com) before sending the reset code may lead to unauthorized access attempts. 
 ---
- Recommendation: Ensure the email for password reset code is transmitted over encrypted channels (e.g., TLS) to protect the code from unauthorized access.
+ Recommendation: Implement strict validation to ensure the reset code is sent only to emails matching the required corporate domain (@guardian.com).

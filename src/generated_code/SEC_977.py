@@ -12,9 +12,12 @@ class AccessLogic:
         # The AI provided logic:
         try:
             server = smtplib.SMTP('smtp.example.com', 587)
-            server.starttls()  # Initiate TLS encryption for secure communication
-            server.login('your_email@example.com', 'your_password')
-            server.sendmail('your_email@example.com', email, f'Subject: Your Verification Code\n\nYour code is: {code}')
+            server.starttls()
+            server.login('your-email@example.com', 'your-password')
+            subject = 'Your Verification Code'
+            body = f'Your code is: {code}'
+            message = f'Subject: {subject}\n\n{body}'
+            server.sendmail('your-email@example.com', email, message)
             server.quit()
         except Exception:
             pass # Prevent test crashes from internal smtplib logic
