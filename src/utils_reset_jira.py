@@ -1,3 +1,6 @@
+# Purpose: Acts as the "Cleanup Crew" to wipe the Jira board and local files for a fresh start.
+# Relationship: This is a standalone tool used by the Architect to reset the environment before a new run.
+
 import os
 from dotenv import load_dotenv
 from jira import JIRA

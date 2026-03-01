@@ -1,70 +1,71 @@
-import subprocess
-import sys
-import os
-import glob
+import sys, os, time, importlib.util, subprocess
+from dotenv import load_dotenv
+from jira import JIRA
 
-def run_step(description, command):
-    """Executes a pipeline step and handles terminal output."""
-    print(f"\n--- 🚀 {description} ---")
+# Load environment
+base_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(base_dir, '.env'))
+
+# Helper for dynamic imports
+def import_agent(module_name, file_path):
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+# Load agents
+analyst = import_agent("analyst", "src/02_analyst_agent.py")
+coder = import_agent("coder", "src/04_coder_agent.py")
+qa = import_agent("qa", "src/05_qa_tester_agent.py")
+
+def purge_jira_backlog():
+    print("\n--- 🧨 Phase 0.2: Jira Backlog Purge ---")
     try:
-        # Runs the command and pipes the output directly to your terminal
-        subprocess.run(command, check=True)
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Error during {description}: {e}")
-        return False
+        jira = JIRA(server=os.getenv("JIRA_SERVER"), basic_auth=(os.getenv("JIRA_EMAIL"), os.getenv("JIRA_API_TOKEN")))
+        issues = jira.search_issues(f'project={os.getenv("JIRA_PROJECT_KEY")}', maxResults=100)
+        for issue in issues: issue.delete()
+        print("✅ Jira Reset Complete.")
+    except Exception as e: print(f"⚠️ Jira Purge failed: {e}")
 
 def main():
     print("🛡️  STARTING GUARDIAN-AUTH ARCHITECT PIPELINE")
-    print("==============================================")
-
-    # --- PHASE 1: SECURITY AUDITING ---
-    if not run_step("Phase 1: Security Auditing", ["python3", "src/security_auditor.py"]):
-        print("🚨 Critical failure in Security Auditor. Aborting.")
-        sys.exit(1)
-
-    # --- 🚦 GATE 1: ARCHITECT REVIEW ---
-    print("\n" + "!"*45)
-    user_input = input("🛑 SECURITY AUDIT COMPLETE. Review findings above.\nDo you approve these requirements? (y/n): ")
-    if user_input.lower() != 'y':
-        print("❌ Pipeline terminated by Architect. No tickets created.")
-        sys.exit(0)
-
-    # --- PHASE 2: JIRA SYNCHRONIZATION ---
-    # CHANGED: Now runs the actual Analyst Agent instead of just the test script
-    if not run_step("Phase 2: Jira Synchronization", ["python3", "src/analyst_agent.py"]):
-        print("⚠️  Warning: Jira sync failed. Check your .env and Jira project key.")
-
-    # --- 🚦 GATE 2: DEV AUTHORIZATION ---
-    user_input = input("\n🚀 Ready to authorize AI Code Generation? (y/n): ")
-    if user_input.lower() != 'y':
-        print("❌ Pipeline terminated by Architect. No code modified.")
-        sys.exit(0)
-
-    # --- PHASE 3: AUTOMATED CODE GENERATION ---
-    if not run_step("Phase 3: Automated Code Generation", ["python3", "src/developer_agent.py"]):
-        print("🚨 Code generation failed. Check LLM connectivity.")
-        sys.exit(1)
-
-    # --- PHASE 4: LOGIC VERIFICATION ---
-    # CHANGED: Dynamic discovery of test files instead of hardcoded 'test_SEC_67.py'
-    test_files = glob.glob("src/generated_code/test_*.py")
     
-    if not test_files:
-        print("🚨 Error: No test files were found in src/generated_code/. Phase 3 likely failed to save files.")
-        sys.exit(1)
+    # Reset Environment
+    subprocess.run(["python3", "src/utils_reset_build.py"])
+    purge_jira_backlog()
 
-    print(f"🧪 Running verification on {len(test_files)} generated test(s)...")
-    
-    # We run pytest on the entire directory to catch all generated tests
-    if not run_step("Phase 4: Logic Verification", ["python3", "-m", "pytest", "src/generated_code/"]):
-        print("🚨 Logic Verification FAILED. Do not deploy this code!")
-        sys.exit(1)
+    # Step 1: Audit
+    subprocess.run(["python3", "src/01_auditor_agent.py"])
 
-    print("\n" + "="*46)
-    print("✅ MISSION ACCOMPLISHED: All agents successfully orchestrated.")
-    print("🛡️  System Status: AUDITED | CODED | VERIFIED")
-    print("="*46)
+    # Gate 1: Human Approval
+    if input("\n🛑 Approve audit findings? (y/n): ").lower() != 'y': sys.exit(0)
+
+    # Step 2: Jira Sync
+    ticket_keys = analyst.run_analyst_workflow() 
+    if not ticket_keys: sys.exit(1)
+
+    # Gate 2: Dev Authorization
+    if input(f"\n🚀 {len(ticket_keys)} tickets synced. Authorize AI? (y/n): ").lower() != 'y': sys.exit(0)
+
+    time.sleep(3) # Let Jira catch up
+
+    # Steps 3 & 4: Build & Test
+    for key in ticket_keys:
+        print(f"⚙️  Processing {key}...")
+        if coder.build_feature(key):
+            qa.validate_feature(key)
+
+    # Step 5: Verification
+    print("\n--- 🚀 Phase 5: Logic Verification ---")
+    result = subprocess.run(["python3", "-m", "pytest", "src/generated_code/"])
+
+    if result.returncode == 0:
+        print("\n✅ VERIFICATION PASSED. Pushing to Git...")
+        subprocess.run(["python3", "src/utils_git_checkin.py"])
+    else:
+        print("\n🚨 VERIFICATION FAILED. Quality Gate Closed.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

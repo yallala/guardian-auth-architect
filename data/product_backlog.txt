@@ -1,0 +1,3 @@
+Project: GuardianAuth
+1. Use a corporate email ending in @guardian.com to register.
+2. Implement a password reset feature that sends a 6-digit code to the user's email.

@@ -1,2 +1,0 @@
-Project: GuardianAuth
-1. Use a corporate email ending in @guardian.com to register.
