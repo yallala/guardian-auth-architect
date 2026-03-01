@@ -1,5 +1,5 @@
-Title: Email Verification for Password Reset 
+Title: Password Reset Code Security 
 ---
- Finding: The implementation does not specify whether the 6-digit code email is verified before sending instructions for password reset. 
+ Finding: The password reset feature could be vulnerable to interception if the 6-digit code is transmitted over an unsecured email channel. 
 ---
- Recommendation: Ensure the email address is verified as belonging to the user before sending the 6-digit reset code to prevent unauthorized access.
+ Recommendation: Ensure that the email containing the reset code is transmitted over encrypted channels (e.g., TLS) to protect against interception.
