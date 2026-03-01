@@ -1,5 +1,5 @@
-Title: Password Reset Feature Email Verification 
+Title: Secure Transmission of Password Reset Code 
 ---
- Finding: The password reset feature relies solely on email delivery, which may be susceptible to unauthorized access if the user's email account is compromised. 
+ Finding: The 6-digit code for password reset could be transmitted over an insecure email channel, making it susceptible to interception. 
 ---
- Recommendation: Implement an additional verification step, such as security questions or two-factor authentication, to complement the 6-digit code sent via email.
+ Recommendation: Ensure the email for password reset code is transmitted over encrypted channels (e.g., TLS) to protect the code from unauthorized access.

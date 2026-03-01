@@ -1,25 +1,21 @@
 import subprocess
 import datetime
-import os
 
 def run_git_workflow():
-    print("\n📦 Git Utility: Committing Verified Code...")
-    
+    print("\n📦 Git Utility: Committing Full Pipeline State...")
     try:
-        # 1. Stage the verified code folder
-        subprocess.run(["git", "add", "src/generated_code/"], check=True)
+        # 1. Add everything (Infrastructure + Generated Code)
+        subprocess.run(["git", "add", "."], check=True)
         
-        # 2. Check for changes (prevents empty commit errors)
-        # Fixed: Corrected the variable name and subprocess call
+        # 2. Check for changes
         git_status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-        
         if not git_status.stdout.strip():
-            print("✨ No changes detected in generated_code. Skipping Git push.")
+            print("✨ No changes detected. Environment is clean.")
             return
 
-        # 3. Commit with a timestamp
+        # 3. Commit
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        commit_msg = f"🛡️ Verified AI Logic Check-in: {timestamp}"
+        commit_msg = f"🛡️ Pipeline Sync: Verified Build [{timestamp}]"
         subprocess.run(["git", "commit", "-m", commit_msg], check=True)
         
         # 4. Push

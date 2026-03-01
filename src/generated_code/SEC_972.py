@@ -14,8 +14,7 @@ class AccessLogic:
             server = smtplib.SMTP('smtp.example.com', 587)
             server.starttls()
             server.login('your_email@example.com', 'your_password')
-            subject = 'Your verification code'
-            message = f'Subject: {subject}\n\nYour verification code is: {code}'
+            message = f"Subject: Your Verification Code\n\nYour verification code is: {code}"
             server.sendmail('your_email@example.com', email, message)
             server.quit()
         except Exception:

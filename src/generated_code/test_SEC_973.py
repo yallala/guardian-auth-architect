@@ -2,11 +2,11 @@
 import pytest
 from unittest.mock import patch, MagicMock
 import smtplib
-from SEC_968 import AccessLogic
+from SEC_973 import AccessLogic
 
 @patch('smtplib.SMTP_SSL')
 @patch('smtplib.SMTP')
-class TestSEC_968:
+class TestSEC_973:
     def setup_method(self, method):
         self.logic = AccessLogic()
 
