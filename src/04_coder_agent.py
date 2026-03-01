@@ -14,41 +14,33 @@ def build_feature(ticket_key):
     
     llm = AzureChatOpenAI(azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"), api_key=os.getenv("AZURE_OPENAI_KEY"), azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), api_version=os.getenv("AZURE_OPENAI_API_VERSION"))
 
-    system_msg = SystemMessage(content="""
-        TASK: Provide ONLY the inner logic for: send_verified_code(self, email, code).
-        RULES: 
-        1. Use ONLY 'smtplib.SMTP' (Standard). Do NOT use SMTP_SSL.
-        2. No imports. No method definitions.
-        3. Keep it simple: server.sendmail(...).
-        4. Wrap in ```python blocks.
-    """)
+    system_msg = SystemMessage(content="""You are a Senior Security Engineer. 
+Write a complete, standalone Python file containing a class named `AccessLogic` that fulfills the given Gherkin User Story.
+RULES:
+1. Provide the FULL Python code. 
+2. Keep the code EXTREMELY MINIMAL. Do NOT add any extra validation logic, security checks, or error handling.
+3. For email, strictly write exactly this pattern:
+   server = smtplib.SMTP(host, port)
+   server.starttls()
+   server.sendmail(sender, recipient, msg)
+   server.quit()
+4. Do not catch exceptions. Let them raise.
+5. DO NOT write any execution code at the module level. Only define the `AccessLogic` class. Absolutely no code should run outside the class methods.
+6. DO NOT import or use `dns.resolver`, `twilio`, `requests` or ANY external packages. Standard library ONLY.
+7. Wrap your code exactly inside a ```python block.
+""")
     
     response = llm.invoke([system_msg, HumanMessage(content=gherkin)])
     logic_match = re.search(r"```(?:python)?\n(.*?)\n```", response.content, re.DOTALL)
-    logic_body = logic_match.group(1).strip() if logic_match else "pass"
+    
+    if not logic_match:
+        print(f"⚠️ Warning: LLM did not output proper python block for {ticket_key}. Using raw response.")
+        logic_body = response.content
+    else:
+        logic_body = logic_match.group(1).strip()
 
-    template = f"""
-import re
-import smtplib
-
-class AccessLogic:
-    def verify_domain(self, email):
-        allowed = ["example.com", "test.com", "guardian.com"]
-        domain = email.split("@")[-1].lower() if "@" in email else ""
-        return domain in allowed
-
-    def send_verified_code(self, email, code):
-        # The AI provided logic:
-        try:
-            {textwrap.indent(logic_body, '            ').strip()}
-        except Exception:
-            pass # Prevent test crashes from internal smtplib logic
-        return True
-
-    def validate_code(self, input_code, actual_code):
-        return str(input_code).strip() == str(actual_code).strip()
-"""
     path = os.path.join(base_dir, "src", "generated_code", f"{ticket_key.replace('-', '_')}.py")
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f: f.write(template)
+    with open(path, "w") as f: 
+        f.write(logic_body)
     return True

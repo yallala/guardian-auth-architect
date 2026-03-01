@@ -1,5 +1,5 @@
-Title: Email Validation for Password Reset 
+Title: Email Verification for Password Reset 
 ---
- Finding: Lack of explicit mention regarding validation of corporate email (@guardian.com) before sending the reset code may lead to unauthorized access attempts. 
+ Finding: The implementation does not specify whether the 6-digit code email is verified before sending instructions for password reset. 
 ---
- Recommendation: Implement strict validation to ensure the reset code is sent only to emails matching the required corporate domain (@guardian.com).
+ Recommendation: Ensure the email address is verified as belonging to the user before sending the 6-digit reset code to prevent unauthorized access.

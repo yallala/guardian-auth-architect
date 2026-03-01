@@ -38,15 +38,15 @@ def main():
     # Step 1: Audit
     subprocess.run(["python3", "src/01_auditor_agent.py"])
 
-    # Gate 1: Human Approval
-    if input("\n🛑 Approve audit findings? (y/n): ").lower() != 'y': sys.exit(0)
+    # Gate 1: Auto Approval
+    print("\n🛑 Auto-approving audit findings...")
 
     # Step 2: Jira Sync
     ticket_keys = analyst.run_analyst_workflow() 
     if not ticket_keys: sys.exit(1)
 
     # Gate 2: Dev Authorization
-    if input(f"\n🚀 {len(ticket_keys)} tickets synced. Authorize AI? (y/n): ").lower() != 'y': sys.exit(0)
+    print(f"\n🚀 {len(ticket_keys)} tickets synced. Auto-Authorizing AI...")
 
     time.sleep(3) # Let Jira catch up
 

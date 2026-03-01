@@ -20,16 +20,23 @@ def run_analyst_workflow():
     project_key = os.getenv("JIRA_PROJECT_KEY")
 
     for i, req in enumerate(requirements, start=1):
-        system_msg = SystemMessage(content="TASK: Convert audit to Title: [Short] ### Details: [Gherkin]. Keep Title on ONE line.")
+        system_msg = SystemMessage(content="""You are a Senior Security Product Manager. 
+Analyze the following security audit finding and convert it into a formal Gherkin (Behavior-Driven Development) User Story.
+Format your output EXACTLY like this:
+TITLE: <A concise, 1-line summary of the security feature>
+DESCRIPTION:
+<Provide a brief context of the security flaw>
+<Provide the formal Gherkin Syntax: Given... When... Then...>""")
         response = llm.invoke([system_msg, HumanMessage(content=req)])
         
-        parts = response.content.split('###')
-        # Fix: Ensure title is only the first line and stripped of newlines
-        raw_title = parts[0].replace('Title:', '').strip().split('\n')[0] 
-        details = parts[1] if len(parts) > 1 else response.content
+        content = response.content.strip()
+        title_match = re.search(r"TITLE:\s*(.*)", content, re.IGNORECASE)
+        desc_match = re.search(r"DESCRIPTION:\s*(.*)", content, re.IGNORECASE | re.DOTALL)
         
-        # Truncation + Newline Guard for Jira API
-        summary = f"SEC-{i}: {raw_title}".replace('\n', ' ').strip()[:250]
+        raw_title = title_match.group(1).strip() if title_match else "Security Remediation Task"
+        details = desc_match.group(1).strip() if desc_match else content
+        
+        summary = f"SEC-{i}: {raw_title}"[:250]
         
         new_issue = jira.create_issue(fields={'project': {'key': project_key}, 'summary': summary, 'description': details, 'issuetype': {'name': 'Story'}}, prefetch=False)
         ticket_keys.append(new_issue.key)
